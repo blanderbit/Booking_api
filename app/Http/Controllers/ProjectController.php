@@ -2,89 +2,110 @@
 
 namespace App\Http\Controllers;
 use App\User;
-use App\Project;
-use App\Task;
+use App\Comment;
+use App\Rent;
+use App\Post;
 use function GuzzleHttp\Promise\all;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 class ProjectController extends Controller
 {
-    public function getProjectsUser(Request $request, $id)
+    public function getPosts(Request $request, $id)
     {
-        $old_projects = Project::where('user_id', $id)->get();
-        $projects = [];
-        $count = count($old_projects);
+        $old_posts = Post::all();
+        $posts = [];
+        $count = count($old_posts);
         for ($i = 0; $i < $count; $i++){
-            $data = $old_projects[$i];
-            $tasks = Task::where('project_id', $old_projects[$i]->id)->get();
-            $data->tasks = $tasks;
-            array_push($projects, $old_projects[$i]);
+            $data = $old_posts[$i];
+            $reviews = Comment::where('post_id', $old_posts[$i]->id)->get();
+            $data->reviews = count($reviews);
+            array_push($posts, $data);
         }
         return response()->json([
-            'data' => $projects
+            'data' => $posts
         ], 200);
     }
-    public function getProjectUser(Request $request, $id, $id_project)
+    public function getPost(Request $request, $id)
     {
-        $project = Project::where('user_id', $id)->get()->find($id_project);
-        if($project == null){
+        $post = Post::where('id', $id)->get();
+        if($post == null){
             return response()->json([
-                'message' => 'No such project',
+                'message' => 'No such list',
             ]);
         }
-        $tasks = Task::where('project_id', $id_project)->get();
-        $project->tasks = $tasks;
+        $reviews = Comment::where('post_id', $id)->get();
+        $rents = Rent::where('post_id', $id)->get();
+        $post->reviews = $reviews;
+        $post->rents = $rents;
         return response()->json([
-            'project' => $project
-        ]);
-    }
-    public function addProjectUser(Request $request, $id)
-    {
-        $request->validate([
-            'project_name' => 'string|required',
-        ]);
-
-        $project = new Project();
-        $project->user_id = $id;
-        $project->project_name = $request->get('project_name');
-        $project->color = $request->get('color') == null ? 'grey': $request->get('color');
-
-        $project->save();
-        return response()->json([
-            'message' => 'Successfully created user!',
-            'project' => $project
+            'post' => $post
         ],200);
     }
-    public function updateProjectUser(Request $request, $id , $id_project)
+    public function addPost(Request $request, $id)
     {
-        $old_project = Project::where('user_id', $id)->get()->find($id_project);
-        $project = Project::where('user_id', $id)->get()->find($id_project);
-        if($project == null){
+        $request->validate([
+            'office_name' => 'required',
+            'address' => 'required',
+        ]);
+
+        $post = new Post();
+        $post->user_id = $request->get('user_id');
+        $post->project_name = $request->get('office_name');
+        $post->about_office = $request->get('about_office');
+        $post->address = $request->get('address');
+
+        $post->save();
+        return response()->json([
+            'message' => 'Successfully created post!',
+            'project' => $post
+        ],200);
+    }
+    public function updatePost(Request $request, $id)
+    {
+        $post = Post::where('id', $request->get('$id'))->get();
+        if($post->user_id != $request->get('user_id')){
             return response()->json([
-                'message' => 'No such project',
+                'message' => "You don't update post",
             ]);
         }
-        $project->project_name= $request->get('project_name') == null ? $old_project->name :$request->get('project_name');
-        $project->color= $request->get('color') == null ? $old_project->nickname :$request->get('color');
-        $project->update();
+
+        if($post == null){
+            return response()->json([
+                'message' => 'No such post',
+            ]);
+        }
+        $post->user_id = $request->get('user_id');
+        $post->project_name = $request->get('office_name');
+        $post->about_office = $request->get('about_office');
+        $post->address = $request->get('address');
+        $post->update();
         return response()->json([
-            'message' => 'Successfully updated project!',
-            "profile" => $project
+            'message' => 'Successfully updated post!',
+            "post" => $post
         ], 200);
     }
-    public function removeProjectUser(Request $request, $id ,$id_project)
+    public function removePost(Request $request, $id ,$id_project)
     {
-        $project = Project::where('user_id', $id)->get()->find($id_project);
-        if($project == null){
+        $post = Post::where('id', $request->get('$id'))->get();
+        if($post->user_id != $request->get('user_id')){
             return response()->json([
-                'message' => 'No such project',
+                'message' => "You don't update post",
             ]);
         }
-        $tasks = Task::where('project_id', $id_project)->get();
-        $tasks->delete();
-        $project->delete();
+
+        if($post == null){
+            return response()->json([
+                'message' => 'No such post',
+            ]);
+        }
+
+        $reviews = Comment::where('post_id', $id)->get();
+        $rents = Rent::where('post_id', $id)->get();
+        $reviews->delete();
+        $rents->delete();
+        $post->delete();
         return response()->json([
-            'message' => 'Successfully remove project!',
+            'message' => 'Successfully remove post with all data!',
         ], 200);
     }
 

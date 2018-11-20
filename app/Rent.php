@@ -4,7 +4,7 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Priority extends Model
+class Rent extends Model
 {
     //
 }
