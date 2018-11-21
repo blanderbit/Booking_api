@@ -10,8 +10,11 @@ use Illuminate\Http\Request;
 
 Route::post('login', 'AuthController@login');
 Route::post('register', 'AuthController@signup');
+Route::get('get_posts', 'PostController@getPosts');
+
 
 Route::group([
+    'middleware' => 'cors',
     'middleware' => ['auth:api']
 ], function() {
     Route::get('logout', 'AuthController@logout');
@@ -20,14 +23,16 @@ Route::group([
     Route::post('update_profile/{id}', 'ProfilsController@updateProfile');
     Route::delete('remove_profile/{id}', 'ProfilsController@removeProfile');
 
-    Route::get('profile/{id}/get_projects', 'ProjectController@getProjectsUser');
-    Route::get('profile/{id}/get_project/{id_project}', 'ProjectController@getProjectUser');
-    Route::post('profile/{id}/add_project', 'ProjectController@addProjectUser');
-    Route::post('profile/{id}/update_project/{id_project}', 'ProjectController@updateProjectUser');
-    Route::delete('profile/{id}/remove_project/{id_project}', 'ProjectController@removeProjectUser');
 
-    Route::get('profile/{id}/{id_project}/tasks', 'TasksController@getTaskProjectUser');
-    Route::post('profile/{id}/{id_project}/add_task', 'TasksController@addTaskProjectUser');
-    Route::post('profile/{id}/{id_project}/update_task/{id_task}', 'TasksController@updateTaskProjectUser');
-    Route::delete('profile/{id}/{id_project}/remove_task/{id_task}', 'TasksController@removeTaskProjectUser');
+    Route::get('get_post/{id}', 'PostController@getPost');
+    Route::post('add_post', 'PostController@addPost');
+    Route::post('update_post/{id}', 'PostController@updatePost');
+    Route::delete('remove_post/{id}', 'PostController@removePost');
+
+    Route::post('post/{id}/add_rent', 'RentController@addRent');
+    Route::post('post/{id}/remove_rent', 'RentController@removeRent');
+
+    Route::post('post/{id}/add_review', 'CommentsController@addComment');
+    Route::post('post/{id}/update_review', 'CommentsController@updateComment');
+    Route::delete('post/{id}/remove_review}', 'CommentsController@removeComment');
 });

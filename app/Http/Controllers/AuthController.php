@@ -89,7 +89,6 @@ class AuthController extends Controller
             $token->expires_at = Carbon::now()->addWeeks(1);
         }
         $token->save();
-
         return response()->json([
              'message'=> 'you are logged in',
              'user_id' => $user->id,
